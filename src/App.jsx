@@ -6,6 +6,7 @@ import CartModal from "./components/modals/CartModal"
 import PaymentModal from "./components/modals/PaymentModal"
 import CheckoutModal from "./components/modals/CheckoutModal"
 import OrderStatusModal from "./components/modals/OrderStatusModal"
+import StartPage from "./components/StartPage"
 
 const App = () => {
   return (
@@ -13,12 +14,12 @@ const App = () => {
       <Router>
         <div className="min-h-screen bg-gray-100">
           <Routes>
-            <Route path="/:restaurantName" element={<Home />}>
+            <Route path="/" element={<StartPage />} />
+              <Route path="/:restaurantName" element={<Home />} />
               <Route path="cart" element={<CartModal />} />
               <Route path="payment" element={<PaymentModal />} />
               <Route path="checkout" element={<CheckoutModal />} />
               <Route path="order-status" element={<OrderStatusModal />} />
-            </Route>
           </Routes>
         </div>
       </Router>
