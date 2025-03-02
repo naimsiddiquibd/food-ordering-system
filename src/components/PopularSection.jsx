@@ -1,18 +1,32 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPopularItems } from '../store/slices/popularSlice';
 import { useParams } from 'react-router-dom';
+import { setFoodDetails } from '../store/slices/foodDetailsSlice'; // Import the action
+import FoodDetailsModal from './modals/FoodDetailsModal'; // Import the modal component
 
 const PopularSection = () => {
   const { restaurantName } = useParams();
   const dispatch = useDispatch();
   const { menuData, loading, error } = useSelector(state => state.popular);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
 
   useEffect(() => {
     if (restaurantName) {
       dispatch(fetchPopularItems(restaurantName));
     }
   }, [dispatch, restaurantName]);
+
+  // Handle click on a menu item
+  const handleMenuItemClick = (menuItem) => {
+    dispatch(setFoodDetails(menuItem)); // Set the selected item's details in Redux
+    setIsModalOpen(true); // Open the modal
+  };
+
+  // Close the modal
+  const closeModal = () => {
+    setIsModalOpen(false); // Close the modal
+  };
 
   if (loading) return <p>Loading popular items...</p>;
   if (error) return <p>Error fetching popular items: {error}</p>;
@@ -23,7 +37,8 @@ const PopularSection = () => {
         {menuData.map((menuItem, index) => (
           <div
             key={index}
-            className='relative max-w-md lg:max-w-3xl w-32 lg:w-80 h-28 lg:h-72 rounded-lg overflow-hidden'
+            className='relative max-w-md lg:max-w-3xl w-32 lg:w-80 h-28 lg:h-72 rounded-lg overflow-hidden cursor-pointer'
+            onClick={() => handleMenuItemClick(menuItem)} // Open modal on click
           >
             <div className="h-full bg-cover bg-center" style={{ backgroundImage: `url(${menuItem.product_picture})` }}>
               {/* Gradient Overlay */}
@@ -52,6 +67,9 @@ const PopularSection = () => {
           </div>
         ))}
       </div>
+
+      {/* Render the FoodDetailsModal */}
+      <FoodDetailsModal isOpen={isModalOpen} onClose={closeModal} />
     </div>
   );
 };

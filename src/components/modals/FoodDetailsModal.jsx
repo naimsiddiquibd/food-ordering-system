@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { clearFoodDetails } from "../../store/slices/foodDetailsSlice";
-import { addToCart } from "../../store/slices/cartSlice"; // Import the addToCart action
+import { addToCart } from "../../store/slices/cartSlice";
 import FireIcon from "../../../src/assets/fire.svg";
 import { MinusIcon, PlusIcon } from '@heroicons/react/24/solid';
 
@@ -13,7 +13,7 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
   // State for quantity
   const [quantity, setQuantity] = useState(1);
 
-  // State for extras
+  // State for extras (no separate quantity control)
   const [extras, setExtras] = useState({
     vanilla: false,
     chocolate: false,
@@ -21,6 +21,15 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
 
   // State for special instructions
   const [specialInstructions, setSpecialInstructions] = useState("");
+
+  // Reset state when modal is closed or a new item is selected
+  useEffect(() => {
+    if (!isOpen) {
+      setQuantity(1); // Reset quantity
+      setExtras({ vanilla: false, chocolate: false }); // Reset extras
+      setSpecialInstructions(""); // Reset special instructions
+    }
+  }, [isOpen]); // Reset when isOpen changes
 
   // Convert base price to a number
   const basePrice = Number(details?.product_price) || 0;
@@ -59,20 +68,24 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
 
   // Handle "Add to Cart" button click
   const handleAddToCart = () => {
+    // Generate a unique cartItemId based on the product id, extras, and special instructions
+    const cartItemId = `${details.id}-${JSON.stringify(extras)}-${specialInstructions}`;
+
     const cartItem = {
-      id: details.id, // Ensure this is unique
+      cartItemId, // Unique ID for the cart item
+      id: details.id, // Product ID
       name: details.product_name,
       price: basePrice,
       quantity,
       product_picture: details.product_picture,
       extras: {
-        vanilla: extras.vanilla,
-        chocolate: extras.chocolate,
+        vanilla: extras.vanilla ? { quantity, price: 60 } : false, // Extras quantity matches item quantity
+        chocolate: extras.chocolate ? { quantity, price: 60 } : false, // Extras quantity matches item quantity
       },
       specialInstructions,
       totalPrice,
     };
-  
+
     dispatch(addToCart(cartItem)); // Add the item to the cart
     handleClose(); // Close the modal
   };
@@ -148,7 +161,8 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
                       <p className="bg-[#f1f1f1] py-[6px] px-[13px] text-[#a4a4a4] text-[11.8px]">Optional</p>
                     </div>
 
-                    <div className='flex justify-between items-center'>
+                    {/* Vanilla Flavour */}
+                    <div className='flex justify-between items-center mb-2'>
                       <label className="flex items-center gap-1 cursor-pointer">
                         <input
                           type="checkbox"
@@ -158,9 +172,10 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
                         />
                         <span className="text-[#5b5b5b] text-base">Vanilla Flavour</span>
                       </label>
-                      <p className='text-sm text-black font-semibold'>+ 60 TK</p>
+                      <p className='text-sm text-black font-semibold'>+ {extras.vanilla ? 60 * quantity : 0} TK</p>
                     </div>
 
+                    {/* Chocolate Flavour */}
                     <div className='flex justify-between items-center'>
                       <label className="flex items-center gap-1 cursor-pointer">
                         <input
@@ -171,7 +186,7 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
                         />
                         <span className="text-[#5b5b5b] text-base">Chocolate Flavour</span>
                       </label>
-                      <p className='text-sm text-black font-semibold'>+ 60 TK</p>
+                      <p className='text-sm text-black font-semibold'>+ {extras.chocolate ? 60 * quantity : 0} TK</p>
                     </div>
                   </div>
 
@@ -179,7 +194,7 @@ const FoodDetailsModal = ({ isOpen, onClose }) => {
                   <div className='mt-5'>
                     <p className='text-[18px] text-black font-semibold mb-2'>Special Instructions:</p>
                     <textarea
-                      className="textarea text-base w-full border border-gray-300 text-[#5b5b5b]  rounded-lg resize-none min-h-[90px] px-2 py-1"
+                      className="textarea text-base w-full border border-gray-300 text-[#5b5b5b] rounded-lg resize-none min-h-[90px] px-2 py-1"
                       placeholder=""
                       value={specialInstructions}
                       onChange={handleSpecialInstructionsChange}
