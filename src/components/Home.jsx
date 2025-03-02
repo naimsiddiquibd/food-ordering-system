@@ -45,7 +45,7 @@ const Home = () => {
       </div>
 
       {/* Cart Summary at the Bottom */}
-      <div className="mx-3 sticky bottom-0 z-40">
+      <div className="mx-3 sticky bottom-0 z-40 lg:max-w-2xl lg:mx-auto">
         {items.length > 0 && (
           <div
             onClick={openCartModal}
